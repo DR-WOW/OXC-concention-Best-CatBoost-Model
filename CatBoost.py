@@ -68,6 +68,7 @@ cat_features = ["SEX"]  # 假设 SEX 是分类特征
 features_df[cat_features] = features_df[cat_features].astype(int)
 
 # 模型预测
+prediction = None  # 初始化 prediction 为 None
 if st.button("Predict"):
     try:
         prediction = best_model.predict(features_df)[0]  # 预测结果是连续性变量
@@ -137,8 +138,8 @@ if st.button("Predict"):
 st.header("Prediction Accuracy")
 st.write("展示模型的绝对准确度和相对准确度。")
 
-# 检查是否有真实值
-if true_value > 0:
+# 检查是否有真实值且预测成功
+if true_value > 0 and prediction is not None:
     # 计算绝对准确度和相对准确度
     absolute_accuracy = abs(prediction - true_value)
     relative_accuracy = abs((prediction - true_value) / true_value) * 100 if true_value != 0 else 0

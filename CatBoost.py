@@ -91,20 +91,11 @@ if st.button("Predict"):
             explainer = shap.TreeExplainer(best_model)
             shap_values = explainer.shap_values(features_df)
 
-            # 生成 SHAP 力图
-            html_output = shap.force_plot(
-                explainer.expected_value,
-                shap_values[0, :],
-                features_df.iloc[0, :],
-                show=False
-            )
-
-            # 将 HTML 输出保存为文件
-            with open("shap_force_plot.html", "w") as f:
-                f.write(html_output.html())
-
-            # 在 Streamlit 中显示 HTML 文件
-            st.components.v1.html(html_output.html(), height=400)
+            # 使用 matplotlib 绘制 SHAP 值
+            fig, ax = plt.subplots(figsize=(10, 6))
+            shap.summary_plot(shap_values, features_df, plot_type="bar", show=False)
+            plt.title("SHAP Values for Each Feature")
+            st.pyplot(fig)
 
         except Exception as e:
             st.error(f"An error occurred during SHAP visualization: {e}")

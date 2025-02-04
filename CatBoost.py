@@ -57,6 +57,9 @@ for feature, config in feature_ranges.items():
             index=config["options"].index(config["default"])
         )
 
+# 添加真实值输入框
+true_value = st.sidebar.number_input("真实值 (mg/L)", min_value=0.0, max_value=100.0, value=0.0, step=0.1)
+
 # 将输入特征转换为 Pandas DataFrame
 features_df = pd.DataFrame([inputs])
 
@@ -134,11 +137,33 @@ if st.button("Predict"):
 st.header("Prediction Accuracy")
 st.write("展示模型的绝对准确度和相对准确度。")
 
-# 假设你有真实值和预测值
-true_values = [1.0, 2.0, 3.0, 4.0, 5.0]  # 真实值
-predicted_values = [1.1, 2.1, 2.9, 4.1, 5.1]  # 预测值
+# 检查是否有真实值
+if true_value > 0:
+    # 计算绝对准确度和相对准确度
+    absolute_accuracy = abs(prediction - true_value)
+    relative_accuracy = abs((prediction - true_value) / true_value) * 100 if true_value != 0 else 0
 
-# 绘制散点图
-fig, ax = plt.subplots(figsize=(8, 6))
-ax.scatter(true_values, predicted_values, alpha=0.5, color='blue', label='Predictions')
-ax.plot([min(true_values), max(true_values)], [min(true_values), max(true_values)])
+    # 显示准确度指标
+    st.subheader("Accuracy Metrics")
+    st.write(f"Absolute Accuracy: {absolute_accuracy:.2f} mg/L")
+    st.write(f"Relative Accuracy: {relative_accuracy:.2f}%")
+
+    # 绘制散点图
+    fig, ax = plt.subplots(figsize=(8, 6))
+    ax.scatter(true_value, prediction, alpha=0.5, color='blue', label='Prediction')
+    ax.plot([0, max(true_value, prediction)], [0, max(true_value, prediction)], color='red', linestyle='--', label='Ideal Line')
+    ax.set_xlabel('True Values (mg/L)')
+    ax.set_ylabel('Predicted Values (mg/L)')
+    ax.set_title('Prediction Accuracy')
+    ax.legend()
+
+    # 添加指标信息
+    textstr = '\n'.join((
+        f'Absolute Accuracy: {absolute_accuracy:.2f} mg/L',
+        f'Relative Accuracy: {relative_accuracy:.2f}%'))
+
+    props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+    ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=12, verticalalignment='top', bbox=props)
+
+    # 显示图像
+    st.pyplot(fig)

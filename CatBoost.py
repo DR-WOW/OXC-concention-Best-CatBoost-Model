@@ -5,10 +5,22 @@ import pandas as pd
 import shap
 import matplotlib.pyplot as plt
 
-# 加载保存的ExtraTrees模型
-model = joblib.load('cat_grid_search.pkl')
+# 加载模型
+model_path = "cat_grid_search.pkl"
+model = joblib.load(model_path)
 
-# 特征范围定义（根据提供的特征范围和数据类型）
+# 设置页面配置和标题
+st.set_page_config(layout="wide", page_title="Concentration Prediction", page_icon="📊")
+st.title("📊 Concentration Prediction and SHAP Visualization")
+st.write("""
+Through inputting feature values, you can get the model's prediction and understand the contribution of each feature using SHAP analysis.
+""")
+
+# 特征输入区域
+st.sidebar.header("Feature Input Area")
+st.sidebar.write("Please input feature values:")
+
+# 定义特征输入范围
 feature_ranges = {
     "SEX": {"type": "categorical", "options": [0, 1], "default": 0},
     "AGE": {"type": "numerical", "min": 0.0, "max": 18.0, "default": 5.0},
@@ -23,45 +35,41 @@ feature_ranges = {
     "CL": {"type": "numerical", "min": 0.0, "max": 100.0, "default": 3.85},
     "V": {"type": "numerical", "min": 0.0, "max": 1000.0, "default": 10.0}
 }
-# Streamlit 界面
-st.title("Antiepileptic Drug (OXC) Treatment Outcome Prediction with SHAP Visualization")
 
-# Description 
-st.write("""
-This app predicts the likelihood of antiepileptic drug (OXC) treatment outcome based on input features.
-Select the Catboost model, input feature values, and get predictions and probability estimates.
-""")
-
-
-# 动态生成输入项
-st.header("Enter the following feature values:")
-feature_values = []
-for feature, properties in feature_ranges.items():
-    if properties["type"] == "numerical":
-        value = st.number_input(
-            label=f"{feature} ({properties['min']} - {properties['max']})",
-            min_value=float(properties["min"]),
-            max_value=float(properties["max"]),
-            value=float(properties["default"]),
+# 动态生成输入界面
+inputs = {}
+for feature, config in feature_ranges.items():
+    if config["type"] == "numerical":
+        inputs[feature] = st.sidebar.number_input(
+            f"{feature} (Range: {config['min']}-{config['max']})",
+            min_value=config["min"],
+            max_value=config["max"],
+            value=config["default"]
         )
-    elif properties["type"] == "categorical":
-        value = st.selectbox(
-            label=f"{feature} (Select a value)",
-            options=properties["options"],
+    elif config["type"] == "categorical":
+        inputs[feature] = st.sidebar.selectbox(
+            f"{feature}",
+            options=config["options"],
+            index=config["options"].index(config["default"])
         )
-    feature_values.append(value)
 
-# 转换为模型输入格式
-features = np.array([feature_values])
+# 将输入特征转换为 Pandas DataFrame
+features_df = pd.DataFrame([inputs])
 
-# 预测与 SHAP 可视化
+# 如果模型在训练时使用了分类特征，确保这些特征是整数类型
+cat_features = ["SEX"]  # 假设 SEX 是分类特征
+features_df[cat_features] = features_df[cat_features].astype(int)
+
+# 模型预测
 if st.button("Predict"):
-    # 模型预测
-    prediction = model.predict(features)[0]  # 预测结果是连续性变量
+    try:
+        prediction = model.predict(features_df)[0]  # 预测结果是连续性变量
 
-    # 显示预测结果，使用 Matplotlib 渲染指定字体
-    st.header("Prediction Result")
-    st.success(f"Based on the feature values, the predicted concentration is {prediction:.2f} mg/L.")
+        # 显示预测结果
+        st.header("Prediction Result")
+        st.success(f"Based on the feature values, the predicted concentration is {prediction:.2f} mg/L.")
+    except Exception as e:
+        st.error(f"An error occurred during prediction: {e}")
 
     fig, ax = plt.subplots(figsize=(8, 1))
     ax.text(

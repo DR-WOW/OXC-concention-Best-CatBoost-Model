@@ -18,6 +18,7 @@ st.set_page_config(layout="wide", page_title="Concentration Prediction", page_ic
 st.title("📊 Concentration Prediction and SHAP Visualization")
 st.write("""
 By inputting feature values, you can obtain the model's prediction and understand the contribution of each feature using SHAP analysis. 
+
 If a true value is provided, the model's absolute and relative accuracy will also be displayed.
 """)
 
@@ -104,7 +105,7 @@ if st.button("Predict"):
             shap_values = explainer.shap_values(features_df)
 
             # Generate SHAP force plot
-            st.header("SHAP Force Plot")
+            st.header("1. SHAP Force Plot")
             html_output = shap.force_plot(
                 explainer.expected_value,
                 shap_values[0, :],
@@ -115,21 +116,21 @@ if st.button("Predict"):
             st.components.v1.html(shap_html, height=400)
 
             # Generate SHAP summary plot
-            st.header("SHAP Summary Plot")
+            st.header("2. SHAP Summary Plot")
             fig, ax = plt.subplots(figsize=(8, 6))
             shap.summary_plot(shap_values, features_df, plot_type="dot", show=False)
             plt.title("SHAP Values for Each Feature")
             st.pyplot(fig)
 
             # Generate SHAP feature importance plot
-            st.header("SHAP Feature Importance")
-            fig, ax = plt.subplots(figsize=(8, 6))
+            st.header("3. SHAP Feature Importance")
+            fig, ax = plt.subplots(figsize=(4, 3))
             shap.summary_plot(shap_values, features_df, plot_type="bar", show=False)
             plt.title("SHAP Values for Each Feature")
             st.pyplot(fig)
 
             # Generate SHAP decision plot
-            st.header("SHAP Decision Plot")
+            st.header("4. SHAP Decision Plot")
             fig, ax = plt.subplots(figsize=(8, 6))
             shap.decision_plot(explainer.expected_value, shap_values[0, :], features_df.iloc[0, :], show=False)
             plt.title("SHAP Decision Plot")
@@ -143,7 +144,7 @@ if st.button("Predict"):
 
 # Prediction accuracy plot
 if true_value > 0 and prediction is not None:
-    st.header("Prediction Accuracy")
+    st.header("📊 Prediction Accuracy")
     st.write("Display the model's absolute and relative accuracy.")
 
     # Calculate absolute and relative accuracy

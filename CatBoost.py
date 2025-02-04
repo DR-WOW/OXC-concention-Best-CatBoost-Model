@@ -141,4 +141,4 @@ predicted_values = [1.1, 2.1, 2.9, 4.1, 5.1]  # 预测值
 # 绘制散点图
 fig, ax = plt.subplots(figsize=(8, 6))
 ax.scatter(true_values, predicted_values, alpha=0.5, color='blue', label='Predictions')
-ax.plot([min(true_values), max(true_values)], [min(true_values), max(true
+ax.plot([min(true_values), max(true_values)], [min(true_values), max(true_values)]

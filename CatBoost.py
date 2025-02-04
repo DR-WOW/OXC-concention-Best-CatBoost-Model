@@ -91,20 +91,13 @@ if st.button("Predict"):
         plt.savefig("prediction_text.png", bbox_inches='tight', dpi=300)
         st.image("prediction_text.png", use_column_width=True)
 
-        # Visualization display
-        st.header("SHAP Visualization and Model Prediction Performance Analysis")
-        st.write("""
-        The following charts display the model's SHAP analysis results, including SHAP visualizations of feature contributions, 
-        relative accuracy of model predictions, and absolute accuracy of model predictions.
-        """)
-
         # Calculate SHAP values
         try:
             explainer = shap.TreeExplainer(best_model)
             shap_values = explainer.shap_values(features_df)
 
             # Generate SHAP force plot
-            st.header("SHAP Force Plot")
+            st.header("1. SHAP Force Plot")
             html_output = shap.force_plot(
                 explainer.expected_value,
                 shap_values[0, :],
@@ -115,21 +108,21 @@ if st.button("Predict"):
             st.components.v1.html(shap_html, height=400)
 
             # Generate SHAP summary plot
-            st.header("SHAP Summary Plot")
+            st.header("2. SHAP Summary Plot")
             fig, ax = plt.subplots(figsize=(8, 6))
             shap.summary_plot(shap_values, features_df, plot_type="dot", show=False)
             plt.title("SHAP Values for Each Feature")
             st.pyplot(fig)
 
             # Generate SHAP feature importance plot
-            st.header("SHAP Feature Importance")
+            st.header("3. SHAP Feature Importance")
             fig, ax = plt.subplots(figsize=(8, 6))
             shap.summary_plot(shap_values, features_df, plot_type="bar", show=False)
             plt.title("SHAP Values for Each Feature")
             st.pyplot(fig)
 
             # Generate SHAP decision plot
-            st.header("SHAP Decision Plot")
+            st.header("4. SHAP Decision Plot")
             fig, ax = plt.subplots(figsize=(8, 6))
             shap.decision_plot(explainer.expected_value, shap_values[0, :], features_df.iloc[0, :], show=False)
             plt.title("SHAP Decision Plot")
@@ -142,7 +135,7 @@ if st.button("Predict"):
         st.error(f"An error occurred during prediction: {e}")
 
 # Prediction accuracy plot
-st.header("Prediction Accuracy")
+st.header("📊Prediction Accuracy")
 st.write("Display the model's absolute and relative accuracy.")
 
 # Check if a true value exists and prediction was successful
@@ -176,12 +169,12 @@ if true_value > 0 and prediction is not None:
     # Display the plot
     st.pyplot(fig)
 
-# Footer
-st.markdown("---")
-st.header("Summary")
-st.write("""
-Through this page, you can:
-1. Perform real-time predictions using input feature values.
-2. Gain an intuitive understanding of the model's SHAP analysis results, including SHAP visualizations of feature contributions, relative accuracy of model predictions, and absolute accuracy of model predictions.
-These analyses help to deeply understand the model's prediction logic and the importance of features.
-""")
+    # Footer
+    st.markdown("---")
+    st.header("Summary")
+    st.write("""
+    Through this page, you can:
+    1. Perform real-time predictions using input feature values.
+    2. Gain an intuitive understanding of the model's SHAP analysis results, including SHAP visualizations of feature contributions, relative accuracy of model predictions, and absolute accuracy of model predictions.
+    These analyses help to deeply understand the model's prediction logic and the importance of features.
+    """)

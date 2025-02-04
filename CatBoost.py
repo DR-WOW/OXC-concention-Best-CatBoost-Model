@@ -92,16 +92,20 @@ if st.button("Predict"):
             shap_values = explainer.shap_values(features_df)
 
             # 生成 SHAP 力图
-            shap.initjs()
-            shap_force_plot = shap.force_plot(
+            html_output = shap.force_plot(
                 explainer.expected_value,
                 shap_values[0, :],
                 features_df.iloc[0, :],
-                matplotlib=True,
                 show=False
             )
-            plt.savefig("shap_force_plot.png", bbox_inches='tight', dpi=1200)
-            st.image("shap_force_plot.png")
+
+            # 将 HTML 输出保存为文件
+            with open("shap_force_plot.html", "w") as f:
+                f.write(html_output.html())
+
+            # 在 Streamlit 中显示 HTML 文件
+            st.components.v1.html(html_output.html(), height=400)
+
         except Exception as e:
             st.error(f"An error occurred during SHAP visualization: {e}")
 

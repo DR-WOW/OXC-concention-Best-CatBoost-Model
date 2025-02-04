@@ -30,12 +30,12 @@ feature_ranges = {
     "WT": {"type": "numerical", "min": 0.0, "max": 100.0, "default": 25.0, "description": "Weight of the patient (in kg)"},
     "Single_Dose": {"type": "numerical", "min": 0.0, "max": 60.0, "default": 15.0, "description": "Single dose of the drug per weight (mg/kg)"},
     "Daily_Dose": {"type": "numerical", "min": 0.0, "max": 2400.0, "default": 450.0, "description": "Total daily dose of the drug (mg)"},
-    "SCR": {"type": "numerical", "min": 0.0, "max": 150.0, "default": 30.0, "description": "Serum creatinine level (μmol/L)"},
-    "CLCR": {"type": "numerical", "min": 0.0, "max": 200.0, "default": 90.0, "description": "Creatinine clearance rate (L/h)"},
-    "BUN": {"type": "numerical", "min": 0.0, "max": 50.0, "default": 5.0, "description": "Blood urea nitrogen level (mmol/L)"},
+    "SCR": {"type": "numerical", "min": 0.0, "max": 150.0, "default": 30.0, "description": "Serum creatinine level (mg/dL)"},
+    "CLCR": {"type": "numerical", "min": 0.0, "max": 200.0, "default": 90.0, "description": "Creatinine clearance rate (mL/min)"},
+    "BUN": {"type": "numerical", "min": 0.0, "max": 50.0, "default": 5.0, "description": "Blood urea nitrogen level (mg/dL)"},
     "ALT": {"type": "numerical", "min": 0.0, "max": 150.0, "default": 18.0, "description": "Alanine aminotransferase level (U/L)"},
     "AST": {"type": "numerical", "min": 0.0, "max": 150.0, "default": 18.0, "description": "Aspartate transaminase level (U/L)"},
-    "CL": {"type": "numerical", "min": 0.0, "max": 100.0, "default": 3.85, "description": "Metabolic clearance rate of the drug (L/h)"},
+    "CL": {"type": "numerical", "min": 0.0, "max": 100.0, "default": 3.85, "description": "Metabolic clearance rate of the drug (mL/min)"},
     "V": {"type": "numerical", "min": 0.0, "max": 1000.0, "default": 10.0, "description": "Apparent volume of distribution of the drug (L)"}
 }
 
@@ -87,23 +87,23 @@ if st.button("Predict"):
         st.image("prediction_text.png")
 
         # 计算 SHAP 值
-explainer = shap.TreeExplainer(best_model)
-shap_values = explainer.shap_values(features_df)
+        try:
+            explainer = shap.TreeExplainer(best_model)
+            shap_values = explainer.shap_values(features_df)
 
-# 生成 SHAP 力图
-html_output = shap.force_plot(
-    explainer.expected_value,
-    shap_values[0, :],
-    features_df.iloc[0, :],
-    show=False
-)
-
-# 将 HTML 输出保存为文件
-with open("shap_force_plot.html", "w") as f:
-    f.write(html_output.html())
-
-# 在 Streamlit 中显示 HTML 文件
-st.components.v1.html(html_output.html(), height=400)
+            # 生成 SHAP 力图
+            shap.initjs()
+            shap_force_plot = shap.force_plot(
+                explainer.expected_value,
+                shap_values[0, :],
+                features_df.iloc[0, :],
+                matplotlib=True,
+                show=False
+            )
+            plt.savefig("shap_force_plot.png", bbox_inches='tight', dpi=1200)
+            st.image("shap_force_plot.png")
+        except Exception as e:
+            st.error(f"An error occurred during SHAP visualization: {e}")
 
     except Exception as e:
         st.error(f"An error occurred during prediction: {e}")

@@ -116,6 +116,13 @@ if st.button("Predict"):
             plt.title("SHAP Values for Each Feature")
             st.pyplot(fig)
 
+            # 生成 SHAP 决策图
+            st.header("SHAP Decision Plot")
+            fig, ax = plt.subplots(figsize=(10, 6))
+            shap.decision_plot(explainer.expected_value, shap_values[0, :], features_df.iloc[0, :], show=False)
+            plt.title("SHAP Decision Plot")
+            st.pyplot(fig)
+
         except Exception as e:
             st.error(f"An error occurred during SHAP visualization: {e}")
 

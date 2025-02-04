@@ -141,21 +141,4 @@ predicted_values = [1.1, 2.1, 2.9, 4.1, 5.1]  # 预测值
 # 绘制散点图
 fig, ax = plt.subplots(figsize=(8, 6))
 ax.scatter(true_values, predicted_values, alpha=0.5, color='blue', label='Predictions')
-ax.plot([min(true_values), max(true_values)], [min(true_values), max(true_values)], color='red', linestyle='--', label='Ideal Line')
-ax.set_xlabel('True Values')
-ax.set_ylabel('Predicted Values')
-ax.set_title('Prediction Accuracy')
-ax.legend()
-
-# 添加指标信息
-mae = mean_absolute_error(true_values, predicted_values)
-mse = mean_squared_error(true_values, predicted_values)
-r2 = r2_score(true_values, predicted_values)
-
-textstr = '\n'.join((
-    f'MAE: {mae:.2f}',
-    f'MSE: {mse:.2f}',
-    f'R²: {r2:.2f}'))
-
-props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-ax.text(0.05, 0.9
+ax.plot([min(true_values), max(true_values)], [min(true_values), max(true

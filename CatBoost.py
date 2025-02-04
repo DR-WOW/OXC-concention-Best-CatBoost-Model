@@ -9,6 +9,9 @@ import matplotlib.pyplot as plt
 model_path = "cat_grid_search.pkl"
 model = joblib.load(model_path)
 
+# 获取最佳估计器
+best_model = model.best_estimator_
+
 # 设置页面配置和标题
 st.set_page_config(layout="wide", page_title="Concentration Prediction", page_icon="📊")
 st.title("📊 Concentration Prediction and SHAP Visualization")
@@ -22,18 +25,18 @@ st.sidebar.write("Please input feature values:")
 
 # 定义特征输入范围
 feature_ranges = {
-    "SEX": {"type": "categorical", "options": [0, 1], "default": 0},
-    "AGE": {"type": "numerical", "min": 0.0, "max": 18.0, "default": 5.0},
-    "WT": {"type": "numerical", "min": 0.0, "max": 100.0, "default": 25.0},
-    "Single_Dose": {"type": "numerical", "min": 0.0, "max": 60.0, "default": 15.0},
-    "Daily_Dose": {"type": "numerical", "min": 0.0, "max": 2400.0, "default": 450.0},
-    "SCR": {"type": "numerical", "min": 0.0, "max": 150.0, "default": 30.0},
-    "CLCR": {"type": "numerical", "min": 0.0, "max": 200.0, "default": 90.0},
-    "BUN": {"type": "numerical", "min": 0.0, "max": 50.0, "default": 5.0},
-    "ALT": {"type": "numerical", "min": 0.0, "max": 150.0, "default": 18.0},
-    "AST": {"type": "numerical", "min": 0.0, "max": 150.0, "default": 18.0},
-    "CL": {"type": "numerical", "min": 0.0, "max": 100.0, "default": 3.85},
-    "V": {"type": "numerical", "min": 0.0, "max": 1000.0, "default": 10.0}
+    "SEX": {"type": "categorical", "options": [0, 1], "default": 0, "description": "Gender (0 = Female, 1 = Male)"},
+    "AGE": {"type": "numerical", "min": 0.0, "max": 18.0, "default": 5.0, "description": "Age of the patient (in years)"},
+    "WT": {"type": "numerical", "min": 0.0, "max": 100.0, "default": 25.0, "description": "Weight of the patient (in kg)"},
+    "Single_Dose": {"type": "numerical", "min": 0.0, "max": 60.0, "default": 15.0, "description": "Single dose of the drug per weight (mg/kg)"},
+    "Daily_Dose": {"type": "numerical", "min": 0.0, "max": 2400.0, "default": 450.0, "description": "Total daily dose of the drug (mg)"},
+    "SCR": {"type": "numerical", "min": 0.0, "max": 150.0, "default": 30.0, "description": "Serum creatinine level (μmol/L)"},
+    "CLCR": {"type": "numerical", "min": 0.0, "max": 200.0, "default": 90.0, "description": "Creatinine clearance rate (L/h)"},
+    "BUN": {"type": "numerical", "min": 0.0, "max": 50.0, "default": 5.0, "description": "Blood urea nitrogen level (mmol/L)"},
+    "ALT": {"type": "numerical", "min": 0.0, "max": 150.0, "default": 18.0, "description": "Alanine aminotransferase level (U/L)"},
+    "AST": {"type": "numerical", "min": 0.0, "max": 150.0, "default": 18.0, "description": "Aspartate transaminase level (U/L)"},
+    "CL": {"type": "numerical", "min": 0.0, "max": 100.0, "default": 3.85, "description": "Metabolic clearance rate of the drug (L/h)"},
+    "V": {"type": "numerical", "min": 0.0, "max": 1000.0, "default": 10.0, "description": "Apparent volume of distribution of the drug (L)"}
 }
 
 # 动态生成输入界面
@@ -41,14 +44,14 @@ inputs = {}
 for feature, config in feature_ranges.items():
     if config["type"] == "numerical":
         inputs[feature] = st.sidebar.number_input(
-            f"{feature} (Range: {config['min']}-{config['max']})",
+            f"{feature} ({config['description']})",
             min_value=config["min"],
             max_value=config["max"],
             value=config["default"]
         )
     elif config["type"] == "categorical":
         inputs[feature] = st.sidebar.selectbox(
-            f"{feature}",
+            f"{feature} ({config['description']})",
             options=config["options"],
             index=config["options"].index(config["default"])
         )
@@ -63,7 +66,7 @@ features_df[cat_features] = features_df[cat_features].astype(int)
 # 模型预测
 if st.button("Predict"):
     try:
-        prediction = model.predict(features_df)[0]  # 预测结果是连续性变量
+        prediction = best_model.predict(features_df)[0]  # 预测结果是连续性变量
 
         # 显示预测结果
         st.header("Prediction Result")
@@ -84,7 +87,7 @@ if st.button("Predict"):
         st.image("prediction_text.png")
 
         # 计算 SHAP 值
-        explainer = shap.TreeExplainer(model)
+        explainer = shap.TreeExplainer(best_model)
         shap_values = explainer.shap_values(features_df)
 
         # 生成 SHAP 力图

@@ -68,34 +68,36 @@ if st.button("Predict"):
         # 显示预测结果
         st.header("Prediction Result")
         st.success(f"Based on the feature values, the predicted concentration is {prediction:.2f} mg/L.")
+
+        # 保存预测结果为图像
+        fig, ax = plt.subplots(figsize=(8, 1))
+        text = f"Predicted Concentration: {prediction:.2f} mg/L"
+        ax.text(
+            0.5, 0.5, text,
+            fontsize=16,
+            ha='center', va='center',
+            fontname='Times New Roman',
+            transform=ax.transAxes
+        )
+        ax.axis('off')
+        plt.savefig("prediction_text.png", bbox_inches='tight', dpi=300)
+        st.image("prediction_text.png")
+
+        # 计算 SHAP 值
+        explainer = shap.TreeExplainer(model)
+        shap_values = explainer.shap_values(features_df)
+
+        # 生成 SHAP 力图
+        shap.initjs()
+        shap_force_plot = shap.force_plot(
+            explainer.expected_value,
+            shap_values[0, :],
+            features_df.iloc[0, :],
+            matplotlib=True,
+            show=False
+        )
+        plt.savefig("shap_force_plot.png", bbox_inches='tight', dpi=1200)
+        st.image("shap_force_plot.png")
+
     except Exception as e:
         st.error(f"An error occurred during prediction: {e}")
-
-    fig, ax = plt.subplots(figsize=(8, 1))
-    ax.text(
-        0.5, 0.5, text,
-        fontsize=16,
-        ha='center', va='center',
-        fontname='Times New Roman',
-        transform=ax.transAxes
-    )
-    ax.axis('off')
-    plt.savefig("prediction_text.png", bbox_inches='tight', dpi=300)
-    st.image("prediction_text.png")
-
-    # 计算 SHAP 值
-    explainer = shap.TreeExplainer(model)
-    shap_values = explainer.shap_values(pd.DataFrame([feature_values], columns=feature_ranges.keys()))
-
-    # 生成 SHAP 力图
-    class_index = predicted_class  # 当前预测类别
-    shap_fig = shap.force_plot(
-        explainer.expected_value[class_index],
-        shap_values[:,:,class_index],
-        pd.DataFrame([feature_values], columns=feature_ranges.keys()),
-        matplotlib=True,
-    )
-    # 保存并显示 SHAP 图
-    plt.savefig("shap_force_plot.png", bbox_inches='tight', dpi=1200)
-    st.image("shap_force_plot.png")
-

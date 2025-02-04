@@ -105,6 +105,13 @@ if st.button("Predict"):
             # 生成 SHAP 摘要图
             st.header("SHAP Summary Plot")
             fig, ax = plt.subplots(figsize=(10, 6))
+            shap.summary_plot(shap_values, features_df, plot_type="dot", show=False)
+            plt.title("SHAP Values for Each Feature")
+            st.pyplot(fig)
+
+            # 生成 SHAP 特征重要性排序图
+            st.header("SHAP Summary Plot")
+            fig, ax = plt.subplots(figsize=(10, 6))
             shap.summary_plot(shap_values, features_df, plot_type="bar", show=False)
             plt.title("SHAP Values for Each Feature")
             st.pyplot(fig)

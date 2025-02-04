@@ -6,41 +6,41 @@ import shap
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
-# 加载模型
+# Load the model
 model_path = "cat_grid_search.pkl"
 model = joblib.load(model_path)
 
-# 获取最佳估计器
+# Get the best estimator
 best_model = model.best_estimator_
 
-# 设置页面配置和标题
+# Set page configuration and title
 st.set_page_config(layout="wide", page_title="Concentration Prediction", page_icon="📊")
 st.title("📊 Concentration Prediction and SHAP Visualization")
 st.write("""
-通过输入特征值，您可以获取模型的预测结果，并通过 SHAP 分析了解每个特征的贡献。
+By inputting feature values, you can obtain the model's prediction and understand the contribution of each feature using SHAP analysis.
 """)
 
-# 特征输入区域
+# Feature input area
 st.sidebar.header("Feature Input Area")
-st.sidebar.write("请输入特征值：")
+st.sidebar.write("Please input feature values:")
 
-# 定义特征输入范围
+# Define feature input ranges
 feature_ranges = {
-    "SEX": {"type": "categorical", "options": [0, 1], "default": 0, "description": "性别 (0 = 女, 1 = 男)"},
-    "AGE": {"type": "numerical", "min": 0.0, "max": 18.0, "default": 5.0, "description": "患者年龄 (岁)"},
-    "WT": {"type": "numerical", "min": 0.0, "max": 100.0, "default": 25.0, "description": "患者体重 (kg)"},
-    "Single_Dose": {"type": "numerical", "min": 0.0, "max": 60.0, "default": 15.0, "description": "单次给药剂量/体重 (mg/kg)"},
-    "Daily_Dose": {"type": "numerical", "min": 0.0, "max": 2400.0, "default": 450.0, "description": "日总剂量 (mg)"},
-    "SCR": {"type": "numerical", "min": 0.0, "max": 150.0, "default": 30.0, "description": "血清肌酐水平 (μmol/L)"},
-    "CLCR": {"type": "numerical", "min": 0.0, "max": 200.0, "default": 90.0, "description": "肌酐清除率 (L/h)"},
-    "BUN": {"type": "numerical", "min": 0.0, "max": 50.0, "default": 5.0, "description": "血尿素氮水平 (mmol/L)"},
-    "ALT": {"type": "numerical", "min": 0.0, "max": 150.0, "default": 18.0, "description": "丙氨酸氨基转移酶水平 (U/L)"},
-    "AST": {"type": "numerical", "min": 0.0, "max": 150.0, "default": 18.0, "description": "天冬氨酸氨基转移酶水平 (U/L)"},
-    "CL": {"type": "numerical", "min": 0.0, "max": 100.0, "default": 3.85, "description": "药物的代谢清除率 (L/h)"},
-    "V": {"type": "numerical", "min": 0.0, "max": 1000.0, "default": 10.0, "description": "药物的表观分布容积 (L)"}
+    "SEX": {"type": "categorical", "options": [0, 1], "default": 0, "description": "Gender (0 = Female, 1 = Male)"},
+    "AGE": {"type": "numerical", "min": 0.0, "max": 18.0, "default": 5.0, "description": "Patient's age (in years)"},
+    "WT": {"type": "numerical", "min": 0.0, "max": 100.0, "default": 25.0, "description": "Patient's weight (kg)"},
+    "Single_Dose": {"type": "numerical", "min": 0.0, "max": 60.0, "default": 15.0, "description": "Single dose of the drug per weight (mg/kg)"},
+    "Daily_Dose": {"type": "numerical", "min": 0.0, "max": 2400.0, "default": 450.0, "description": "Total daily dose of the drug (mg)"},
+    "SCR": {"type": "numerical", "min": 0.0, "max": 150.0, "default": 30.0, "description": "Serum creatinine level (μmol/L)"},
+    "CLCR": {"type": "numerical", "min": 0.0, "max": 200.0, "default": 90.0, "description": "Creatinine clearance rate (L/h)"},
+    "BUN": {"type": "numerical", "min": 0.0, "max": 50.0, "default": 5.0, "description": "Blood urea nitrogen level (mmol/L)"},
+    "ALT": {"type": "numerical", "min": 0.0, "max": 150.0, "default": 18.0, "description": "Alanine aminotransferase level (U/L)"},
+    "AST": {"type": "numerical", "min": 0.0, "max": 150.0, "default": 18.0, "description": "Aspartate transaminase level (U/L)"},
+    "CL": {"type": "numerical", "min": 0.0, "max": 100.0, "default": 3.85, "description": "Metabolic clearance rate of the drug (L/h)"},
+    "V": {"type": "numerical", "min": 0.0, "max": 1000.0, "default": 10.0, "description": "Apparent volume of distribution of the drug (L)"}
 }
 
-# 动态生成输入界面
+# Dynamically generate the input interface
 inputs = {}
 for feature, config in feature_ranges.items():
     if config["type"] == "numerical":
@@ -57,27 +57,27 @@ for feature, config in feature_ranges.items():
             index=config["options"].index(config["default"])
         )
 
-# 添加真实值输入框
-true_value = st.sidebar.number_input("真实值 (mg/L)", min_value=0.0, max_value=100.0, value=0.0, step=0.1)
+# Add a text box for the true value
+true_value = st.sidebar.number_input("True Value (mg/L)", min_value=0.0, max_value=100.0, value=0.0, step=0.1)
 
-# 将输入特征转换为 Pandas DataFrame
+# Convert the input features to a Pandas DataFrame
 features_df = pd.DataFrame([inputs])
 
-# 如果模型在训练时使用了分类特征，确保这些特征是整数类型
-cat_features = ["SEX"]  # 假设 SEX 是分类特征
+# If the model used categorical features during training, ensure these features are of integer type
+cat_features = ["SEX"]  # Assuming SEX is a categorical feature
 features_df[cat_features] = features_df[cat_features].astype(int)
 
-# 模型预测
-prediction = None  # 初始化 prediction 为 None
+# Model prediction
+prediction = None  # Initialize prediction to None
 if st.button("Predict"):
     try:
-        prediction = best_model.predict(features_df)[0]  # 预测结果是连续性变量
+        prediction = best_model.predict(features_df)[0]  # Prediction result is a continuous variable
 
-        # 显示预测结果
+        # Display the prediction result
         st.header("Prediction Result")
         st.success(f"Based on the feature values, the predicted concentration is {prediction:.2f} mg/L.")
 
-        # 保存预测结果为图像
+        # Save the prediction result as an image
         fig, ax = plt.subplots(figsize=(8, 1))
         text = f"Predicted Concentration: {prediction:.2f} mg/L"
         ax.text(
@@ -91,12 +91,19 @@ if st.button("Predict"):
         plt.savefig("prediction_text.png", bbox_inches='tight', dpi=300)
         st.image("prediction_text.png", use_column_width=True)
 
-        # 计算 SHAP 值
+        # Visualization display
+        st.header("SHAP Visualization and Model Prediction Performance Analysis")
+        st.write("""
+        The following charts display the model's SHAP analysis results, including SHAP visualizations of feature contributions, 
+        relative accuracy of model predictions, and absolute accuracy of model predictions.
+        """)
+
+        # Calculate SHAP values
         try:
             explainer = shap.TreeExplainer(best_model)
             shap_values = explainer.shap_values(features_df)
 
-            # 生成 SHAP 力图
+            # Generate SHAP force plot
             st.header("SHAP Force Plot")
             html_output = shap.force_plot(
                 explainer.expected_value,
@@ -107,21 +114,21 @@ if st.button("Predict"):
             shap_html = f"<head>{shap.getjs()}</head><body>{html_output.html()}</body>"
             st.components.v1.html(shap_html, height=400)
 
-            # 生成 SHAP 摘要图
+            # Generate SHAP summary plot
             st.header("SHAP Summary Plot")
             fig, ax = plt.subplots(figsize=(8, 6))
             shap.summary_plot(shap_values, features_df, plot_type="dot", show=False)
             plt.title("SHAP Values for Each Feature")
             st.pyplot(fig)
 
-            # 生成 SHAP 特征重要性排序图
+            # Generate SHAP feature importance plot
             st.header("SHAP Feature Importance")
             fig, ax = plt.subplots(figsize=(8, 6))
             shap.summary_plot(shap_values, features_df, plot_type="bar", show=False)
             plt.title("SHAP Values for Each Feature")
             st.pyplot(fig)
 
-            # 生成 SHAP 决策图
+            # Generate SHAP decision plot
             st.header("SHAP Decision Plot")
             fig, ax = plt.subplots(figsize=(8, 6))
             shap.decision_plot(explainer.expected_value, shap_values[0, :], features_df.iloc[0, :], show=False)
@@ -134,22 +141,22 @@ if st.button("Predict"):
     except Exception as e:
         st.error(f"An error occurred during prediction: {e}")
 
-# 预测准确性图
+# Prediction accuracy plot
 st.header("Prediction Accuracy")
-st.write("展示模型的绝对准确度和相对准确度。")
+st.write("Display the model's absolute and relative accuracy.")
 
-# 检查是否有真实值且预测成功
+# Check if a true value exists and prediction was successful
 if true_value > 0 and prediction is not None:
-    # 计算绝对准确度和相对准确度
+    # Calculate absolute and relative accuracy
     absolute_accuracy = abs(prediction - true_value)
     relative_accuracy = abs((prediction - true_value) / true_value) * 100 if true_value != 0 else 0
 
-    # 显示准确度指标
+    # Display accuracy metrics
     st.subheader("Accuracy Metrics")
     st.write(f"Absolute Accuracy: {absolute_accuracy:.2f} mg/L")
     st.write(f"Relative Accuracy: {relative_accuracy:.2f}%")
 
-    # 绘制散点图
+    # Plot scatter plot
     fig, ax = plt.subplots(figsize=(8, 6))
     ax.scatter(true_value, prediction, alpha=0.5, color='blue', label='Prediction')
     ax.plot([0, max(true_value, prediction)], [0, max(true_value, prediction)], color='red', linestyle='--', label='Ideal Line')
@@ -158,7 +165,7 @@ if true_value > 0 and prediction is not None:
     ax.set_title('Prediction Accuracy')
     ax.legend()
 
-    # 添加指标信息
+    # Add metrics information
     textstr = '\n'.join((
         f'Absolute Accuracy: {absolute_accuracy:.2f} mg/L',
         f'Relative Accuracy: {relative_accuracy:.2f}%'))
@@ -166,5 +173,15 @@ if true_value > 0 and prediction is not None:
     props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
     ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=12, verticalalignment='top', bbox=props)
 
-    # 显示图像
+    # Display the plot
     st.pyplot(fig)
+
+# Footer
+st.markdown("---")
+st.header("Summary")
+st.write("""
+Through this page, you can:
+1. Perform real-time predictions using input feature values.
+2. Gain an intuitive understanding of the model's SHAP analysis results, including SHAP visualizations of feature contributions, relative accuracy of model predictions, and absolute accuracy of model predictions.
+These analyses help to deeply understand the model's prediction logic and the importance of features.
+""")

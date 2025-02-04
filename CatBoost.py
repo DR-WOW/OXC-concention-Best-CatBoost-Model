@@ -157,7 +157,7 @@ if true_value > 0 and prediction is not None:
     st.write(f"Relative Accuracy: {relative_accuracy:.2f}%")
 
     # Plot scatter plot
-    fig, ax = plt.subplots(figsize=(4, 3))
+    fig, ax = plt.subplots(figsize=(8, 6))
     ax.scatter(true_value, prediction, alpha=0.5, color='blue', label='Prediction')
     ax.plot([0, max(true_value, prediction)], [0, max(true_value, prediction)], color='red', linestyle='--', label='Ideal Line')
     ax.set_xlabel('True Values (mg/L)')

@@ -117,7 +117,7 @@ if st.button("Predict"):
 
             # Generate SHAP summary plot
             st.header("2. SHAP Summary Plot")
-            fig, ax = plt.subplots(figsize=(8, 6))
+            fig, ax = plt.subplots(figsize=(4, 3))
             shap.summary_plot(shap_values, features_df, plot_type="dot", show=False)
             plt.title("SHAP Values for Each Feature")
             st.pyplot(fig)
@@ -131,7 +131,7 @@ if st.button("Predict"):
 
             # Generate SHAP decision plot
             st.header("4. SHAP Decision Plot")
-            fig, ax = plt.subplots(figsize=(8, 6))
+            fig, ax = plt.subplots(figsize=(4, 3))
             shap.decision_plot(explainer.expected_value, shap_values[0, :], features_df.iloc[0, :], show=False)
             plt.title("SHAP Decision Plot")
             st.pyplot(fig)
@@ -157,7 +157,7 @@ if true_value > 0 and prediction is not None:
     st.write(f"Relative Accuracy: {relative_accuracy:.2f}%")
 
     # Plot scatter plot
-    fig, ax = plt.subplots(figsize=(8, 6))
+    fig, ax = plt.subplots(figsize=(4, 3))
     ax.scatter(true_value, prediction, alpha=0.5, color='blue', label='Prediction')
     ax.plot([0, max(true_value, prediction)], [0, max(true_value, prediction)], color='red', linestyle='--', label='Ideal Line')
     ax.set_xlabel('True Values (mg/L)')
